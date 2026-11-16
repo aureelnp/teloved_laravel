@@ -7,6 +7,7 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -15,12 +16,24 @@ class ProductController extends Controller
     /**
      * Display a paginated listing of products.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $products = Product::query()
-            ->with(['category', 'user'])
-            ->latest('id')
-            ->paginate(15);
+        $query = Product::query()->with(['category', 'user']);
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->input('category_id'));
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $perPage = (int) $request->input('per_page', 15);
+        $products = $query->latest('id')->paginate($perPage);
 
         return $this->paginated($products, 'Daftar produk berhasil diambil.');
     }

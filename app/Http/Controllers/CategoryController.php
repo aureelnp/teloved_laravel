@@ -7,6 +7,7 @@ use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
@@ -15,12 +16,24 @@ class CategoryController extends Controller
     /**
      * Display a paginated listing of categories.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $categories = Category::query()
-            ->withCount('products')
-            ->latest('id')
-            ->paginate(15);
+        $query = Category::query()->withCount('products');
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $perPage = (int) $request->input('per_page', 15);
+        if ($request->boolean('all') || $request->input('all') === 'true') {
+            $perPage = 100;
+        }
+
+        $categories = $query->latest('id')->paginate($perPage);
 
         return $this->paginated($categories, 'Daftar kategori berhasil diambil.');
     }
