@@ -58,6 +58,22 @@ class ProductCrudTest extends TestCase
         ]);
     }
 
+    public function test_product_creation_generates_slug_from_name(): void
+    {
+        $category = Category::factory()->create();
+
+        $this->postJson('/api/products', [
+            'category_id' => $category->id,
+            'name' => 'Kemeja Flanel Katun',
+            'price' => 189000,
+            'stock' => 3,
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.slug', 'kemeja-flanel-katun');
+
+        $this->assertDatabaseHas('products', ['name' => 'Kemeja Flanel Katun', 'slug' => 'kemeja-flanel-katun']);
+    }
+
     public function test_product_creation_fails_with_invalid_data(): void
     {
         $this->postJson('/api/products', [

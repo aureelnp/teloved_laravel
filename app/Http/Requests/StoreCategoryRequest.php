@@ -23,7 +23,7 @@ class StoreCategoryRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'min:2', 'max:255', 'unique:categories,name'],
-            'slug' => ['required', 'string', 'alpha_dash', 'max:255', 'unique:categories,slug'],
+            'slug' => ['sometimes', 'string', 'alpha_dash', 'max:255', 'unique:categories,slug'],
             'description' => ['nullable', 'string', 'max:2000'],
             'is_active' => ['sometimes', 'boolean'],
         ];
@@ -39,7 +39,6 @@ class StoreCategoryRequest extends FormRequest
         return [
             'name.required' => 'Nama kategori wajib diisi.',
             'name.unique' => 'Nama kategori sudah digunakan.',
-            'slug.required' => 'Slug wajib diisi.',
             'slug.alpha_dash' => 'Slug hanya boleh berisi huruf, angka, strip, dan garis bawah.',
             'slug.unique' => 'Slug sudah digunakan.',
         ];

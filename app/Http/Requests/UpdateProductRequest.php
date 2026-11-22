@@ -28,7 +28,6 @@ class UpdateProductRequest extends FormRequest
             'name' => ['sometimes', 'required', 'string', 'min:3', 'max:255'],
             'slug' => [
                 'sometimes',
-                'required',
                 'string',
                 'alpha_dash',
                 'max:255',
@@ -54,7 +53,6 @@ class UpdateProductRequest extends FormRequest
             'user_id.exists' => 'User tidak ditemukan.',
             'name.required' => 'Nama produk wajib diisi.',
             'name.min' => 'Nama produk minimal 3 karakter.',
-            'slug.required' => 'Slug wajib diisi.',
             'slug.alpha_dash' => 'Slug hanya boleh berisi huruf, angka, strip, dan garis bawah.',
             'slug.unique' => 'Slug sudah digunakan.',
             'price.required' => 'Harga wajib diisi.',

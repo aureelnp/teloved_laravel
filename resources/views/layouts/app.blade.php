@@ -49,7 +49,7 @@
                 
                 <!-- Brand Monogram & Title -->
                 <div class="flex items-center gap-8">
-                    <a href="{{ route('home') }}" class="group flex items-center gap-3">
+                    <a href="{{ route('categories.view') }}" class="group flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-stone-900 text-white flex items-center justify-center font-bold text-lg tracking-wider shadow-sm group-hover:bg-stone-800 transition-colors">
                             T
                         </div>
@@ -61,10 +61,6 @@
 
                     <!-- Desktop Nav Links -->
                     <nav class="hidden md:flex items-center gap-1.5">
-                        <a href="{{ route('home') }}" 
-                           class="px-3.5 py-2 rounded-xl text-xs font-medium transition-colors {{ request()->routeIs('home') ? 'bg-stone-100 text-stone-900 font-semibold' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50' }}">
-                            Overview
-                        </a>
                         <a href="{{ route('categories.view') }}" 
                            class="px-3.5 py-2 rounded-xl text-xs font-medium transition-colors {{ request()->routeIs('categories.view') ? 'bg-stone-100 text-stone-900 font-semibold' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50' }}">
                             Kategori Fashion
@@ -82,15 +78,6 @@
 
                 <!-- Right Header Actions -->
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('products.view') }}" 
-                       class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-stone-900 text-white hover:bg-stone-800 shadow-xs transition-colors">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        <span>Jelajahi Produk</span>
-                    </a>
-
                     <!-- Mobile Menu Hamburger Button -->
                     <button type="button" id="btn-mobile-menu" class="md:hidden p-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors" aria-label="Menu">
                         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -105,14 +92,11 @@
 
         <!-- Mobile Menu Drawer -->
         <div id="mobile-menu-drawer" class="hidden md:hidden border-t border-stone-200 bg-white/95 px-4 pt-3 pb-5 space-y-1 shadow-lg">
-            <a href="{{ route('home') }}" class="block px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('home') ? 'bg-stone-100 text-stone-900 font-semibold' : 'text-stone-600' }}">
-                Overview Dashboard
-            </a>
             <a href="{{ route('categories.view') }}" class="block px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('categories.view') ? 'bg-stone-100 text-stone-900 font-semibold' : 'text-stone-600' }}">
                 Kategori Fashion
             </a>
             <a href="{{ route('products.view') }}" class="block px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('products.view') ? 'bg-stone-100 text-stone-900 font-semibold' : 'text-stone-600' }}">
-                Katalog & Stok Produk
+                Katalog Produk
             </a>
             <a href="{{ route('users.view') }}" class="block px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('users.view') ? 'bg-stone-100 text-stone-900 font-semibold' : 'text-stone-600' }}">
                 Manajemen User
@@ -124,43 +108,6 @@
     <main class="flex-1">
         @yield('content')
     </main>
-
-    <!-- Footer -->
-    <footer class="mt-20 border-t border-stone-200 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-                <div class="md:col-span-2 space-y-3">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center font-bold text-sm">T</div>
-                        <span class="text-lg font-bold tracking-tight text-stone-900">Teloved</span>
-                    </div>
-                    <p class="text-stone-500 text-xs leading-relaxed max-w-md">
-                        Platform e-commerce preloved fashion dengan kurasi ketat untuk mendukung sirkularitas gaya hidup berkelanjutan, berkualitas tinggi, dan ramah lingkungan.
-                    </p>
-                </div>
-                <div>
-                    <h4 class="text-xs font-semibold text-stone-900 uppercase tracking-wider mb-3">Navigasi Utama</h4>
-                    <ul class="space-y-2 text-xs text-stone-600">
-                        <li><a href="{{ route('categories.view') }}" class="hover:text-stone-900 transition-colors">Kategori Fashion</a></li>
-                        <li><a href="{{ route('products.view') }}" class="hover:text-stone-900 transition-colors">Katalog Produk Preloved</a></li>
-                        <li><a href="{{ route('users.view') }}" class="hover:text-stone-900 transition-colors">Manajemen Pengguna</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-xs font-semibold text-stone-900 uppercase tracking-wider mb-3">API & Sistem</h4>
-                    <ul class="space-y-2 text-xs text-stone-600">
-                        <li><a href="/api/categories" target="_blank" class="hover:text-stone-900 font-mono text-[11px] transition-colors">/api/categories</a></li>
-                        <li><a href="/api/products" target="_blank" class="hover:text-stone-900 font-mono text-[11px] transition-colors">/api/products</a></li>
-                        <li><a href="/api/users" target="_blank" class="hover:text-stone-900 font-mono text-[11px] transition-colors">/api/users</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="pt-8 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-400 gap-4">
-                <p>&copy; {{ date('Y') }} Teloved Fashion. All rights reserved.</p>
-                <p>Designed with Clean Minimal UI for Preloved Fashion.</p>
-            </div>
-        </div>
-    </footer>
 
     <!-- Global Confirmation Modal -->
     <div id="global-confirm-modal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="confirm-modal-title" role="dialog" aria-modal="true">

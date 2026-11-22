@@ -12,13 +12,9 @@ class FrontendPagesTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_home_page_can_be_rendered(): void
+    public function test_home_page_redirects_to_categories(): void
     {
-        $response = $this->get('/');
-        $response->assertOk();
-        $response->assertSee('Teloved');
-        $response->assertSee('Kategori Fashion');
-        $response->assertSee('Katalog Produk');
+        $this->get('/')->assertRedirect('/categories');
     }
 
     public function test_categories_frontend_page_can_be_rendered(): void
