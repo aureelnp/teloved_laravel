@@ -33,7 +33,6 @@ class UpdateCategoryRequest extends FormRequest
             ],
             'slug' => [
                 'sometimes',
-                'required',
                 'string',
                 'alpha_dash',
                 'max:255',
@@ -54,7 +53,6 @@ class UpdateCategoryRequest extends FormRequest
         return [
             'name.required' => 'Nama kategori wajib diisi.',
             'name.unique' => 'Nama kategori sudah digunakan.',
-            'slug.required' => 'Slug wajib diisi.',
             'slug.alpha_dash' => 'Slug hanya boleh berisi huruf, angka, strip, dan garis bawah.',
             'slug.unique' => 'Slug sudah digunakan.',
         ];

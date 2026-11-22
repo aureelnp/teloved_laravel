@@ -1,24 +1,17 @@
 /**
  * Teloved Users Module
- * Handles user profile listings, role badges, registration & edit forms with strict validation
+ * Handles user listing and CRUD operations
  */
 
-import { Api, ApiError } from './api.js';
+import { Api } from './api.js';
 import { Toast } from './toast.js';
-import { formatDate, debounce } from './utils.js';
+import { formatDate } from './utils.js';
 
 export const UsersPage = {
     users: [],
     loading: false,
-    searchQuery: '',
-    viewMode: 'table', // 'table' | 'cards'
     modalMode: 'create', // 'create' | 'edit'
     activeUserId: null,
-    pagination: {
-        currentPage: 1,
-        lastPage: 1,
-        total: 0,
-    },
 
     init() {
         const root = document.getElementById('users-view-root');
@@ -41,37 +34,6 @@ export const UsersPage = {
             btn.addEventListener('click', () => this.closeModal());
         });
 
-        // Search input
-        const searchInput = document.getElementById('user-search-input');
-        if (searchInput) {
-            searchInput.addEventListener('input', debounce((e) => {
-                this.searchQuery = e.target.value.trim().toLowerCase();
-                this.fetchUsers(1);
-            }, 300));
-        }
-
-        // View mode toggle
-        const btnTable = document.getElementById('btn-view-table');
-        const btnCards = document.getElementById('btn-view-cards');
-        if (btnTable && btnCards) {
-            btnTable.addEventListener('click', () => {
-                this.viewMode = 'table';
-                btnTable.classList.add('bg-stone-900', 'text-white');
-                btnTable.classList.remove('bg-white', 'text-stone-600');
-                btnCards.classList.remove('bg-stone-900', 'text-white');
-                btnCards.classList.add('bg-white', 'text-stone-600');
-                this.renderUsers();
-            });
-            btnCards.addEventListener('click', () => {
-                this.viewMode = 'cards';
-                btnCards.classList.add('bg-stone-900', 'text-white');
-                btnCards.classList.remove('bg-white', 'text-stone-600');
-                btnTable.classList.remove('bg-stone-900', 'text-white');
-                btnTable.classList.add('bg-white', 'text-stone-600');
-                this.renderUsers();
-            });
-        }
-
         // Form submit
         const form = document.getElementById('user-form');
         if (form) {
@@ -79,53 +41,20 @@ export const UsersPage = {
         }
     },
 
-    async fetchUsers(page = 1) {
+    async fetchUsers() {
         this.loading = true;
         this.renderLoading(true);
 
-        const params = {
-            per_page: 50,
-            page,
-        };
-
-        if (this.searchQuery) {
-            params.search = this.searchQuery;
-        }
-
         try {
-            const res = await Api.getUsers(params);
+            const res = await Api.getUsers({ per_page: 50 });
             this.users = res.data || [];
-            if (res.meta) {
-                this.pagination = {
-                    currentPage: res.meta.current_page || 1,
-                    lastPage: res.meta.last_page || 1,
-                    total: res.meta.total || this.users.length,
-                };
-            }
             this.renderUsers();
-            this.updateStats();
         } catch (err) {
             Toast.error(err.message || 'Gagal memuat daftar pengguna.');
             this.renderError(err.message);
         } finally {
             this.loading = false;
             this.renderLoading(false);
-        }
-    },
-
-    updateStats() {
-        const totalEl = document.getElementById('stat-total-users');
-        const adminEl = document.getElementById('stat-admin-users');
-        const memberEl = document.getElementById('stat-member-users');
-
-        if (totalEl) totalEl.textContent = this.pagination.total || this.users.length;
-        if (adminEl) {
-            const adminCount = this.users.filter(u => u.id === 1 || u.email.includes('admin')).length;
-            adminEl.textContent = adminCount;
-        }
-        if (memberEl) {
-            const memberCount = this.users.filter(u => u.id !== 1 && !u.email.includes('admin')).length;
-            memberEl.textContent = memberCount;
         }
     },
 
@@ -157,7 +86,7 @@ export const UsersPage = {
                 </div>
                 <h3 class="font-medium text-stone-900 text-lg">Gagal Memuat Pengguna</h3>
                 <p class="text-sm text-stone-500 mt-1 max-w-sm mx-auto">${msg || 'Silakan periksa koneksi server.'}</p>
-                <button type="button" onclick="window.UsersPage.fetchUsers()" class="mt-4 px-4 py-2 bg-stone-900 text-white rounded-lg text-xs font-medium hover:bg-stone-800 transition">
+                <button type="button" onclick="window.UsersPage.fetchUsers()" class="mt-4 px-4 py-2 bg-stone-900 text-white rounded-lg text-xs font-medium hover:bg-stone-800">
                     Coba Lagi
                 </button>
             </div>
@@ -172,7 +101,7 @@ export const UsersPage = {
             .slice(0, 2)
             .join('')
             .toUpperCase();
-        
+
         // Colors hash
         const colors = [
             'bg-stone-100 text-stone-800 border-stone-300',
@@ -221,26 +150,18 @@ export const UsersPage = {
 
         if (emptyState) emptyState.classList.add('hidden');
 
-        if (this.viewMode === 'table') {
-            this.renderTableView(container);
-        } else {
-            this.renderCardsView(container);
-        }
-    },
-
-    renderTableView(container) {
         const rows = this.users.map(user => {
             const avatar = this.getUserAvatar(user);
             const roleBadge = this.getUserRoleBadge(user);
             const joinedDate = formatDate(user.created_at);
 
             return `
-                <tr class="hover:bg-stone-50/70 transition-colors group">
+                <tr class="hover:bg-stone-50/70">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center gap-3">
                             ${avatar}
                             <div>
-                                <p class="text-sm font-semibold text-stone-900 group-hover:text-stone-700 transition-colors">${user.name}</p>
+                                <p class="text-sm font-semibold text-stone-900">${user.name}</p>
                                 <p class="text-xs text-stone-400">ID: #${user.id}</p>
                             </div>
                         </div>
@@ -256,18 +177,18 @@ export const UsersPage = {
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
                         <div class="flex items-center justify-end gap-1.5">
-                            <button type="button" 
+                            <button type="button"
                                 onclick="window.UsersPage.openModal('edit', ${user.id})"
-                                class="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors"
+                                class="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-lg"
                                 title="Edit Profil Pengguna">
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                 </svg>
                             </button>
-                            <button type="button" 
+                            <button type="button"
                                 onclick="window.UsersPage.confirmDelete(${user.id}, '${user.name.replace(/'/g, "\\'")}')"
-                                class="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                class="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"
                                 title="Hapus Pengguna">
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -300,73 +221,6 @@ export const UsersPage = {
                 </div>
             </div>
         `;
-    },
-
-    renderCardsView(container) {
-        const cards = this.users.map(user => {
-            const avatar = this.getUserAvatar(user);
-            const roleBadge = this.getUserRoleBadge(user);
-            const joinedDate = formatDate(user.created_at);
-
-            return `
-                <div class="bg-white rounded-2xl border border-stone-200/80 p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-start justify-between gap-3 mb-3">
-                            <div class="flex items-center gap-3">
-                                ${avatar}
-                                <div>
-                                    <h4 class="font-semibold text-stone-900 text-base">${user.name}</h4>
-                                    <p class="text-xs text-stone-400">ID: #${user.id}</p>
-                                </div>
-                            </div>
-                            ${roleBadge}
-                        </div>
-
-                        <div class="mt-3 py-3 border-y border-stone-100 space-y-1.5 text-xs">
-                            <div class="flex items-center gap-2 text-stone-600">
-                                <svg class="w-3.5 h-3.5 text-stone-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-                                </svg>
-                                <span class="font-mono text-stone-700 truncate">${user.email}</span>
-                            </div>
-                            <div class="flex items-center gap-2 text-stone-500">
-                                <svg class="w-3.5 h-3.5 text-stone-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
-                                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                                </svg>
-                                <span>Bergabung: ${joinedDate}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-4 flex items-center justify-end gap-2">
-                        <button type="button" 
-                            onclick="window.UsersPage.openModal('edit', ${user.id})"
-                            class="px-3 py-1.5 text-xs font-medium text-stone-700 bg-stone-50 hover:bg-stone-100 rounded-lg transition-colors flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                            </svg>
-                            Edit
-                        </button>
-                        <button type="button" 
-                            onclick="window.UsersPage.confirmDelete(${user.id}, '${user.name.replace(/'/g, "\\'")}')"
-                            class="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                            title="Hapus Pengguna">
-                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">${cards}</div>`;
     },
 
     openModal(mode = 'create', userId = null) {
@@ -453,7 +307,7 @@ export const UsersPage = {
         const email = document.getElementById('user-email')?.value.trim();
         const password = document.getElementById('user-password')?.value;
 
-        // Strict email regex validation: standard RFC 5322 compliant regex
+        // Strict email regex validation
         const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
         let hasError = false;
@@ -499,12 +353,7 @@ export const UsersPage = {
         const originalText = submitBtn?.innerHTML || 'Simpan Pengguna';
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `
-                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                </svg> Menyimpan...
-            `;
+            submitBtn.textContent = 'Menyimpan...';
         }
 
         try {

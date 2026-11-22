@@ -38,6 +38,27 @@ class CategoryCrudTest extends TestCase
         $this->assertDatabaseHas('categories', ['slug' => 'aksesoris-komputer']);
     }
 
+    public function test_category_creation_generates_slug_from_name(): void
+    {
+        $this->postJson('/api/categories', [
+            'name' => 'Atasan Formal',
+            'description' => 'Kemeja dan blouse formal.',
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.slug', 'atasan-formal');
+
+        $this->assertDatabaseHas('categories', ['name' => 'Atasan Formal', 'slug' => 'atasan-formal']);
+    }
+
+    public function test_generated_category_slug_is_unique(): void
+    {
+        Category::factory()->create(['slug' => 'atasan-formal']);
+
+        $this->postJson('/api/categories', ['name' => 'Atasan Formal'])
+            ->assertCreated()
+            ->assertJsonPath('data.slug', 'atasan-formal-2');
+    }
+
     public function test_category_creation_fails_with_invalid_data(): void
     {
         $this->postJson('/api/categories', [
